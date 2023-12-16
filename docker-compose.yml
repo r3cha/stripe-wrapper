@@ -2,13 +2,16 @@ version: "3.8"
 
 services:
   app:
-    image: initapp-rails
-    container_name: initapp-rails
+    image: stripe-wrapper
+    container_name: stripe-wrapper
     build:
       context: .
       target: development
-    env_file: .docker.env
+    env_file: 
+      - .docker.env
+      - .env
     tty: true
+    stdin_open: true
     ports:
       - 3001:3000
     tmpfs:
@@ -16,7 +19,6 @@ services:
       - /app/tmp/cache
     depends_on:
       - postgres
-      - redis
     volumes:
       - ./:/app:c
       - bundle:/usr/local/bundle:d
@@ -30,37 +32,9 @@ services:
       start_period: 5s
     command: bundle exec puma -C config/puma.rb
 
-  sidekiq:
-    image: initapp-rails
-    container_name: initapp-sidekiq
-    env_file: .docker.env
-    depends_on:
-      redis:
-        condition: service_healthy    
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./:/app:c
-      - bundle:/usr/local/bundle:d
-      - data:/data:d
-    command: bundle exec sidekiq -C config/sidekiq.yml
-
-  redis:
-    image: redis
-    container_name: initapp-redis
-    volumes:
-      - redis:/data:delegated
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 1s
-      timeout: 3s
-      retries: 30
-    entrypoint: redis-server --appendonly yes
-    restart: always
-
   postgres:
     image: postgres:14.0
-    container_name: initapp-postgres
+    container_name: stripewrapper-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -75,7 +49,7 @@ services:
 
   # mailcatcher:
   #   image: dockage/mailcatcher
-  #   container_name: initapp-mailcatcher
+  #   container_name: stripewrapper-mailcatcher
   #   restart: on-failure:10
   #   ports:
   #     - 1080:1080

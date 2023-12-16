@@ -6,12 +6,12 @@ default: &default
 
 development:
   <<: *default
-  database: initapp_development
+  database: stripewrapper_development
 
 test:
   <<: *default
-  database: initapp_test
+  database: stripewrapper_test
 
 production:
   <<: *default
-  url: initapp_production
+  url: stripewrapper_production
