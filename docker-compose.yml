@@ -32,6 +32,32 @@ services:
       start_period: 5s
     command: bundle exec puma -C config/puma.rb
 
+  test:
+    image: stripe-wrapper
+    container_name: stripe-wrapper-test
+    env_file: 
+      - .docker.env
+      - .env
+    environment:
+      - RAILS_ENV=test
+      - RACK_ENV=test
+    tmpfs:
+      - /app/tmp/pids
+      - /app/tmp/cache
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/app:c
+      - bundle:/usr/local/bundle:d
+      - node_modules:/usr/local/bundle:d
+      - data:/data:d
+    healthcheck:
+      test: ["CMD", "curl", "http://app:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
   postgres:
     image: postgres:14.0
     container_name: stripewrapper-postgres
